@@ -35,9 +35,9 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
-RUN groupadd --system --gid 1001 mcpserver && \
-    useradd --system --uid 1001 --gid mcpserver -m mcpserver
+# Create non-root user (using same UID/GID as filesystem-mcp for shared volume compatibility)
+RUN groupadd --system --gid 1987 mcpserver && \
+    useradd --system --uid 1987 --gid mcpserver -m mcpserver
 
 WORKDIR /app
 
@@ -46,11 +46,14 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY package.json bun.lock tsconfig.json ./
 COPY src ./src
 
-# Set permissions
+# Set permissions and configure git for shared volume access
 RUN mkdir -p /app/logs /app/.storage && \
     chown -R mcpserver:mcpserver /app
 
 USER mcpserver
+
+# Configure git to create group-writable files for shared volume compatibility
+RUN git config --global core.sharedRepository group
 
 # =============================================================================
 # Environment Configuration
