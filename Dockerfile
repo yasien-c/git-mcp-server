@@ -35,9 +35,11 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user (using same UID/GID as filesystem-mcp for shared volume compatibility)
-RUN groupadd --system --gid 1987 mcpserver && \
-    useradd --system --uid 1987 --gid mcpserver -m mcpserver
+# Create shared group for multi-container volume access
+# Use GID 2000 as a common group across all MCP services
+RUN groupadd --system --gid 2000 shared-data && \
+    groupadd --system --gid 1001 mcpserver && \
+    useradd --system --uid 1001 --gid mcpserver -G shared-data -m mcpserver
 
 WORKDIR /app
 
@@ -46,14 +48,23 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY package.json bun.lock tsconfig.json ./
 COPY src ./src
 
-# Set permissions and configure git for shared volume access
+# Set permissions
 RUN mkdir -p /app/logs /app/.storage && \
     chown -R mcpserver:mcpserver /app
 
+# Create /data directory with shared-data group ownership
+RUN mkdir -p /data && \
+    chown mcpserver:shared-data /data && \
+    chmod 775 /data
+
 USER mcpserver
 
-# Configure git to create group-writable files for shared volume compatibility
-RUN git config --global core.sharedRepository group
+# Configure git and umask for shared volume compatibility
+# - core.sharedRepository: Create files with group write permissions
+# - umask 0002: Default file permissions 664/775 instead of 644/755
+RUN git config --global core.sharedRepository group && \
+    echo "umask 0002" >> ~/.bashrc && \
+    echo "umask 0002" >> ~/.profile
 
 # =============================================================================
 # Environment Configuration
@@ -65,6 +76,7 @@ ENV MCP_HTTP_HOST=0.0.0.0
 ENV MCP_HTTP_ENDPOINT_PATH=/mcp
 ENV MCP_LOG_LEVEL=info
 ENV STORAGE_PROVIDER_TYPE=in-memory
+ENV GIT_BASE_DIR=/data
 ENV GIT_SIGN_COMMITS=false
 
 EXPOSE 3015
@@ -73,4 +85,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl --fail http://localhost:3015/healthz || exit 1
 
 # Run the server with Bun
-CMD ["bun", "run", "src/index.ts"]
+# Set umask via shell to ensure group-writable files in shared volumes
+CMD ["/bin/sh", "-c", "umask 0002 && exec bun run src/index.ts"]
