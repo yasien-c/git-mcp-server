@@ -53,14 +53,15 @@ RUN mkdir -p /app/logs /app/.storage && \
     chown -R mcpserver:mcpserver /app
 
 # Create /data directory with shared-data group ownership
+# Set setgid bit (2775) so new files/dirs inherit the group
 RUN mkdir -p /data && \
     chown mcpserver:shared-data /data && \
-    chmod 775 /data
+    chmod 2775 /data
 
 USER mcpserver
 
 # Configure git and umask for shared volume compatibility
-# - core.sharedRepository: Create files with group write permissions
+# - core.sharedRepository: Create files with group write permissions  
 # - umask 0002: Default file permissions 664/775 instead of 644/755
 RUN git config --global core.sharedRepository group && \
     echo "umask 0002" >> ~/.bashrc && \
