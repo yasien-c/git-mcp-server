@@ -40,19 +40,23 @@ export async function executeDiff(
       args.push('--cached');
     }
 
-    if (options.commit1) {
-      args.push(options.commit1);
+    if (options.nameOnly) {
+      args.push('--name-only');
     }
 
-    if (options.commit2) {
-      args.push(options.commit2);
+    if (options.source) {
+      args.push(options.source);
+    }
+
+    if (options.target) {
+      args.push(options.target);
     }
 
     if (options.path) {
       args.push('--', options.path);
     }
 
-    if (options.unified) {
+    if (options.unified && !options.nameOnly) {
       args.push(`--unified=${options.unified}`);
     }
 
@@ -64,10 +68,10 @@ export async function executeDiff(
       context.requestContext,
     );
 
-    // Get diff stats
+    // Get diff stats (skip if nameOnly is set)
     const statCmd = buildGitCommand({
       command: 'diff',
-      args: [...args, '--stat'],
+      args: [...args.filter((a) => a !== '--name-only'), '--stat'],
     });
     const statResult = await execGit(
       statCmd,
