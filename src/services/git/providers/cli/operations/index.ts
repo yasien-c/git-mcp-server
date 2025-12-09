@@ -44,3 +44,4 @@ export { executeWorktree } from './worktree/worktree.js';
 // History inspection operations
 export { executeBlame } from './history/blame.js';
 export { executeReflog } from './history/reflog.js';
+export { executeMergeBase } from './history/merge-base.js';

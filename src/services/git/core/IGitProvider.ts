@@ -69,6 +69,8 @@ import type {
   GitBlameResult,
   GitReflogOptions,
   GitReflogResult,
+  GitMergeBaseOptions,
+  GitMergeBaseResult,
 } from '../types.js';
 
 /**
@@ -493,4 +495,37 @@ export interface IGitProvider {
     options: GitReflogOptions,
     context: GitOperationContext,
   ): Promise<GitReflogResult>;
+
+  /**
+   * Find common ancestor(s) between commits.
+   *
+   * This implements git merge-base functionality to find the best common ancestor
+   * or check ancestry relationships between refs.
+   *
+   * @param options - Refs to compare and merge-base mode
+   * @param context - Operation context
+   * @returns Promise resolving to merge-base result
+   * @throws {McpError} If merge-base fails
+   *
+   * @example
+   * ```typescript
+   * // Find common ancestor
+   * const result = await provider.mergeBase(
+   *   { refs: ['HEAD', 'origin/main'] },
+   *   context
+   * );
+   * // result.mergeBase = "abc123..."
+   *
+   * // Check if ancestor
+   * const check = await provider.mergeBase(
+   *   { refs: ['feature-branch', 'main'], mode: 'is-ancestor' },
+   *   context
+   * );
+   * // check.isAncestor = true/false
+   * ```
+   */
+  mergeBase(
+    options: GitMergeBaseOptions,
+    context: GitOperationContext,
+  ): Promise<GitMergeBaseResult>;
 }
