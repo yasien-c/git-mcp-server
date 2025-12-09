@@ -324,10 +324,10 @@ export interface GitShowResult {
 }
 
 export interface GitDiffOptions {
-  /** First commit to compare (default: HEAD) */
-  commit1?: string;
-  /** Second commit to compare (default: working directory) */
-  commit2?: string;
+  /** Source commit/branch to compare from (e.g., 'master') */
+  source?: string;
+  /** Target commit/branch to compare to (e.g., 'feature-branch') */
+  target?: string;
   /** Show diff of staged changes */
   staged?: boolean;
   /** Limit diff to specific path */
@@ -338,6 +338,8 @@ export interface GitDiffOptions {
   includeUntracked?: boolean;
   /** Show statistics only */
   stat?: boolean;
+  /** Show only names of changed files */
+  nameOnly?: boolean;
 }
 
 export interface GitDiffResult {

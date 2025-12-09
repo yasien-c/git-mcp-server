@@ -87,32 +87,33 @@ async function gitDiffLogic(
   input: ToolInput,
   { provider, targetPath, appContext }: ToolLogicDependencies,
 ): Promise<ToolOutput> {
-  // Build options object with only defined properties
+  // Build options object - parameters now have consistent naming between layers
   const diffOptions: {
-    target?: string;
     source?: string;
-    paths?: string[];
+    target?: string;
+    path?: string;
     staged?: boolean;
     includeUntracked?: boolean;
-    nameOnly?: boolean;
     stat?: boolean;
-    contextLines?: number;
+    nameOnly?: boolean;
+    unified?: number;
   } = {
+    source: input.source,
+    target: input.target,
     staged: input.staged,
     includeUntracked: input.includeUntracked,
-    nameOnly: input.nameOnly,
     stat: input.stat,
-    contextLines: input.contextLines,
+    nameOnly: input.nameOnly,
+    unified: input.contextLines,
   };
-
-  if (input.target !== undefined) {
-    diffOptions.target = input.target;
-  }
-  if (input.source !== undefined) {
-    diffOptions.source = input.source;
-  }
-  if (input.paths !== undefined) {
-    diffOptions.paths = input.paths;
+  
+  // Handle single path (if only one path specified, use it)
+  if (input.paths !== undefined && input.paths.length > 0) {
+    diffOptions.path = input.paths[0];
+    // TODO: Multi-path support requires updating service layer
+    if (input.paths.length > 1) {
+      throw new Error('Multiple paths not yet supported - please specify a single path');
+    }
   }
 
   const result = await provider.diff(diffOptions, {
