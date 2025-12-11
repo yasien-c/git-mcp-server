@@ -71,6 +71,8 @@ export interface GitProviderCapabilities {
   blame: boolean;
   /** Can view reflog */
   reflog: boolean;
+  /** Can find merge-base (common ancestor) */
+  mergeBase: boolean;
   /** Can sign commits (GPG/SSH) */
   signCommits: boolean;
   /** Supports SSH authentication */
@@ -899,4 +901,40 @@ export interface GitReflogResult {
   entries: GitReflogEntry[];
   /** Total number of entries */
   totalEntries: number;
+}
+
+export interface GitMergeBaseOptions {
+  /**
+   * Array of refs (commits, branches, tags) to find common ancestor.
+   * Minimum 1 ref required, though most modes need 2+.
+   */
+  refs: string[];
+  /**
+   * Mode of operation:
+   * - 'default': Find single best common ancestor (default)
+   * - 'all': Find all common ancestors
+   * - 'is-ancestor': Check if first ref is ancestor of second (requires exactly 2 refs)
+   */
+  mode?: 'default' | 'all' | 'is-ancestor';
+}
+
+export interface GitMergeBaseResult {
+  /** Operation success status */
+  success: boolean;
+  /**
+   * Common ancestor commit hash(es).
+   * - Single string for 'default' mode
+   * - Array of strings for 'all' mode
+   * - null if no merge-base found
+   */
+  mergeBase: string | string[] | null;
+  /**
+   * For 'is-ancestor' mode: whether first ref is ancestor of second.
+   * undefined for other modes.
+   */
+  isAncestor?: boolean;
+  /** The refs that were compared */
+  refs: string[];
+  /** Mode used for the operation */
+  mode: string;
 }

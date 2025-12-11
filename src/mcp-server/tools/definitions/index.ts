@@ -11,6 +11,7 @@ import { gitCleanTool } from './git-clean.tool.js';
 import { gitClearWorkingDirTool } from './git-clear-working-dir.tool.js';
 import { gitCloneTool } from './git-clone.tool.js';
 import { gitInitTool } from './git-init.tool.js';
+import { gitMergeBaseTool } from './git-merge-base.tool.js';
 import { gitReflogTool } from './git-reflog.tool.js';
 import { gitSetWorkingDirTool } from './git-set-working-dir.tool.js';
 import { gitStatusTool } from './git-status.tool.js';
@@ -60,6 +61,7 @@ export const allToolDefinitions = [
   gitFetchTool,
   gitInitTool,
   gitLogTool,
+  gitMergeBaseTool,
   gitMergeTool,
   gitPullTool,
   gitPushTool,

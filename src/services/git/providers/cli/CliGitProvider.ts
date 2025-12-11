@@ -44,6 +44,8 @@ import type {
   GitInitResult,
   GitLogOptions,
   GitLogResult,
+  GitMergeBaseOptions,
+  GitMergeBaseResult,
   GitMergeOptions,
   GitMergeResult,
   GitOperationContext,
@@ -85,6 +87,7 @@ import {
   executeInit,
   executeLog,
   executeMerge,
+  executeMergeBase,
   executePull,
   executePush,
   executeRebase,
@@ -129,6 +132,7 @@ export class CliGitProvider extends BaseGitProvider implements IGitProvider {
     worktree: true,
     blame: true,
     reflog: true,
+    mergeBase: true,
     signCommits: true,
     sshAuth: true,
     httpAuth: true,
@@ -509,6 +513,22 @@ export class CliGitProvider extends BaseGitProvider implements IGitProvider {
     const result = await executeReflog(options, context, executor);
     this.logOperationSuccess('reflog', context, {
       entries: result.totalEntries,
+    });
+    return result;
+  }
+
+  async mergeBase(
+    options: GitMergeBaseOptions,
+    context: GitOperationContext,
+  ): Promise<GitMergeBaseResult> {
+    this.checkCapability('mergeBase');
+    this.logOperationStart('mergeBase', context, options);
+    const executor = (args: string[], cwd: string) =>
+      executeGitCommand(args, cwd);
+    const result = await executeMergeBase(options, context, executor);
+    this.logOperationSuccess('mergeBase', context, {
+      mode: result.mode,
+      found: result.mergeBase !== null,
     });
     return result;
   }
